@@ -32,27 +32,29 @@ fn main() {
         description.pop();
     }
 
-    let mut permissions = String::new();
-    print!("Enter add-ons permissions (separated with commas): ");
-    let _ = stdout().flush();
-
-    stdin().read_line(&mut permissions).expect("Did not enter a correct string");
-
-    if let Some('\n')=permissions.chars().next_back() {
-        permissions.pop();
-    }
-    if let Some('\r')=permissions.chars().next_back() {
-        permissions.pop();
-    }
-
+//    let mut permissions = String::new();
+//    print!("Enter add-ons permissions (separated with commas): ");
+//    let _ = stdout().flush();
+//
+//    stdin().read_line(&mut permissions).expect("Did not enter a correct string");
+//
+//    if let Some('\n')=permissions.chars().next_back() {
+//        permissions.pop();
+//    }
+//    if let Some('\r')=permissions.chars().next_back() {
+//        permissions.pop();
+//    }
 
     let mut manifest_json = "{\n\"manifest_version\": 2,\n\"name\": \"".to_string();
     manifest_json.push_str(&name);
     manifest_json.push_str(&"\",\n\"version\": \"1.0\",\n\"description\":\"".to_string());
     manifest_json.push_str(&description);
-    manifest_json.push_str(&"\",\n\n\"permissions\":[\n".to_string());
-    manifest_json.push_str(&permissions);
-    manifest_json.push_str(&"\n]\n}".to_string());
+    manifest_json.push_str(&"\",\n\n\"icons\":{\n\"48\":\"icons/icon.png\"\n}".to_string());
+    manifest_json.push_str(&"\",\n\n\"browser_action\":{\n\"default_icon\":\"icons/icon.png\"\n}".to_string());
+    manifest_json.push_str(&"\",\n\n\"background\":{\n\"scripts\":[\"index.js\"]\n}\n}".to_string());
+
+
+    let mut indexjs_entry = "$ = (queryString) => document.querySelector(queryString);\n//Shortcut for jQuery-like syntax in pure JS".to_string();
 
     create_dir(&name);
     create_dir(&format!("{}/{}", &name, "icons".to_string()));
@@ -78,7 +80,7 @@ fn main() {
         Ok(file) => file,
     };
 
-    let indexjs_file = match File::create(&indexjs) {
+    let mut indexjs_file = match File::create(&indexjs) {
         Err(why) => panic!("Couldn't create {}: {}",
                            indexjs.display(),
                            why.description()),
@@ -86,11 +88,19 @@ fn main() {
     };
 
 
+    match indexjs_file.write_all(indexjs_entry.as_bytes()) {
+        Err(why) => {
+            panic!("Couldn't write to {}: {}", display,
+                   why.description())
+        },
+        Ok(_) => println!("Index.js created!"),
+    }
+
     match file.write_all(manifest_json.as_bytes()) {
         Err(why) => {
             panic!("Couldn't write to {}: {}", display,
                    why.description())
         },
-        Ok(_) => println!("Successfully wrote to {}", display),
+        Ok(_) => println!("Add-on skeleton was successfully created!"),
     }
 }
