@@ -1,5 +1,5 @@
 # Addonis
-Firefox add-on skeleton generator made in **Rust**
+Firefox add-on skeleton generator made in **Rust**. It's still a work in progress.
 
 ## Usage
 
